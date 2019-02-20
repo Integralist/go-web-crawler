@@ -1,7 +1,6 @@
 package coordinator
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -79,7 +78,7 @@ func Init(protocol, hostname string, subdomains []string, logger *logrus.Entry, 
 	process([]mapper.Page{mappedPage})
 
 	if json {
-		prettyPrint(results)
+		fmt.Println(formatter.Pretty(results))
 	} else if dot {
 		fmt.Println(formatter.Dot(results))
 	} else {
@@ -101,13 +100,4 @@ func process(mappedPages []mapper.Page) {
 
 		process(mappedNestedPages)
 	}
-}
-
-// simple approach to pretty printing a data structure
-func prettyPrint(v interface{}) (err error) {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err == nil {
-		fmt.Println(string(b))
-	}
-	return
 }

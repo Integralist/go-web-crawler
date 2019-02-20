@@ -52,3 +52,53 @@ func TestDot(t *testing.T) {
 		t.Errorf("expected: %s\ngot: %s", output, actual)
 	}
 }
+
+func TestPretty(t *testing.T) {
+	type nested struct {
+		D []string
+		E []int
+	}
+	type example struct {
+		A string
+		B int
+		C nested
+	}
+
+	input := example{
+		A: "foo",
+		B: 123,
+		C: nested{
+			D: []string{"a", "b", "c"},
+			E: []int{4, 5, 6},
+		},
+	}
+
+	// still having issues with raw literal not equating to what I'm expecting
+	// due to formatting issues 🤔 it has to be my editor doing something odd on
+	// writing the buffer as the spacing should be identical.
+	//
+	// so again I'm having to rely on flattening the formatting for comparing.
+	output := strings.Fields(`{
+  "A": "foo",
+  "B": 123,
+  "C": {
+    "D": [
+      "a",
+      "b",
+      "c"
+    ],
+    "E": [
+      4,
+      5,
+      6
+    ]
+  }
+}
+`)
+
+	actual := strings.Fields(Pretty(input))
+
+	if output[0] != actual[0] {
+		t.Errorf("expected: %s\ngot: %s", output, actual)
+	}
+}

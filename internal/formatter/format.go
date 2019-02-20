@@ -2,6 +2,7 @@ package formatter
 
 import (
 	"bytes"
+	"encoding/json"
 	"log"
 	"text/template"
 
@@ -36,4 +37,13 @@ func Dot(results []mapper.Page) string {
 	}
 
 	return output.String()
+}
+
+// Pretty cleanly formats a given data structure for easily reading.
+func Pretty(v interface{}) (s string) {
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }

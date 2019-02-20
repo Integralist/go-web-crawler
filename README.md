@@ -90,9 +90,12 @@ The mapper has two exported functions:
 
 ### Formatter
 
-The formatter is used when passing the `-dot` flag. It currently offers one exported function `Dot`, which transforms the results data into dot format notation for use with generating a site map graph via [graphviz](https://www.graphviz.org).
+The formatter is used when passing either the `-json` or `-dot` flags. It currently offers two exported functions:
 
-The output will be (for `integralist.co.uk`) something like the following (albeit much longer):
+- `Dot`: transforms the results data into dot format notation for use with generating a site map graph via [graphviz](https://www.graphviz.org).
+- `Pretty`: pretty prints any given data structure (for easier debugging/visualization).
+
+The `Dot` output will be (for `integralist.co.uk`) something like the following (albeit much longer):
 
 ```
 digraph sitemap {
