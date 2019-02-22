@@ -76,7 +76,7 @@ func Crawl(mappedPage mapper.Page, trackedURLs *sync.Map) []requester.Page {
 	}
 
 	startTime := time.Now()
-	tasks := make(chan mapper.Page, workerPool)
+	tasks := make(chan string, workerPool)
 
 	// spin up our worker pool as goroutines awaiting tasks to be processed
 	for i := 0; i < workerPool; i++ {
@@ -85,28 +85,28 @@ func Crawl(mappedPage mapper.Page, trackedURLs *sync.Map) []requester.Page {
 		go func(i int) {
 			defer wg.Done()
 
-			for page := range tasks {
-				for _, url := range page.Anchors {
-					// check anchors within the given page haven't been processed
-					if _, ok := trackedURLs.Load(url); !ok {
-						page, err := requester.Get(url, httpClient)
-						if err != nil {
-							log.Warn(err)
-							continue
-						}
-						trackedURLs.Store(url, true)
-						counter++
-
-						mutex.Lock()
-						pages = append(pages, page)
-						mutex.Unlock()
-					}
+			for url := range tasks {
+				page, err := requester.Get(url, httpClient)
+				if err != nil {
+					log.Warn(err)
+					continue
 				}
+				trackedURLs.Store(url, true)
+				counter++
+
+				mutex.Lock()
+				pages = append(pages, page)
+				mutex.Unlock()
 			}
 		}(i)
 	}
 
-	tasks <- mappedPage
+	for _, url := range mappedPage.Anchors {
+		// check anchor within the given page hasn't already been processed
+		if _, ok := trackedURLs.Load(url); !ok {
+			tasks <- url
+		}
+	}
 
 	// go routines stay 'open' and blocking this function from finishing until we
 	// close the tasks channel

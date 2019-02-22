@@ -261,6 +261,10 @@ Some things that we should consider...
 
 - **Performance**: profile hot spots, and tweak the 'bounded worker pool' pattern used.
 
+- **Design**:
+  - interfaces to make passing behaviour cleaner
+  - pass generic struct as dependency for each function instead of package level variables
+
 ## TODO
 
 - Tests (YOLO - I managed to squeeze in some, but I'll finish this up another time).
