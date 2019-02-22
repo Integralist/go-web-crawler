@@ -62,7 +62,7 @@ func Init(protocol, hostname string, subdomains []string, logger *logrus.Entry, 
 	}
 
 	// to prevent doubling up the processing of urls that have already been
-	// handled, we'll use a a hash table for O(n) constant time lookups.
+	// handled, we'll use a a hash table for O(1) constant time lookups.
 	trackedURLs.Store(pageURL, true)
 
 	// parse the requested page
