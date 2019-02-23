@@ -6,15 +6,18 @@ import (
 	"strings"
 
 	"github.com/integralist/go-web-crawler/internal/coordinator"
+	"github.com/integralist/go-web-crawler/internal/types"
 	"github.com/sirupsen/logrus"
 )
+
+// instr contains pre-configured instrumentation tools
+var instr types.Instrumentation
 
 var (
 	dot        *bool
 	hostname   string
 	httponly   *bool
 	json       *bool
-	log        *logrus.Entry
 	subdomains string
 	version    string // set via -ldflags in Makefile
 )
@@ -42,11 +45,22 @@ func init() {
 	flag.StringVar(&subdomains, "s", flagSubdomainsValue, flagSubdomainsUsage+" (shorthand)")
 	flag.Parse()
 
-	// log configuration
-	log = logrus.WithFields(logrus.Fields{
-		"version":  version,
-		"hostname": hostname,
-	})
+	// instrumentation configuration
+	//
+	// we would in a real-world application configure this with additional fields
+	// such as `Metric` (for handling the recording of metrics using a service
+	// such as Datadog, just as an example)
+	//
+	// note: I prefer to configure instrumentation within the init function of
+	// the main package, but because I'm then passing this struct instance around
+	// to other functions in other packages, it means I need to use an exported
+	// reference from a mediator package (i.e. the types package)
+	instr = types.Instrumentation{
+		Logger: logrus.WithFields(logrus.Fields{
+			"version":  version,
+			"hostname": hostname,
+		}),
+	}
 }
 
 func main() {
@@ -59,7 +73,7 @@ func main() {
 	// debugging easier as you don't have to filter out pointless messages about
 	// things you already expected to happen, and the logs can instead focus on
 	// surfacing all the _unexpected_ things that happened.
-	log.Debug("STARTUP_SUCCESSFUL")
+	instr.Logger.Debug("STARTUP_SUCCESSFUL")
 
 	protocol := "https"
 	if *httponly {
@@ -69,5 +83,5 @@ func main() {
 	subdomainsParsed := strings.Split(subdomains, ",")
 
 	// TODO: redesign initalization as large signatures are a code smell
-	coordinator.Init(protocol, hostname, subdomainsParsed, log, *json, *dot)
+	coordinator.Init(protocol, hostname, subdomainsParsed, *json, *dot, &instr)
 }

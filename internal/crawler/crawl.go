@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/integralist/go-web-crawler/internal/mapper"
 	"github.com/integralist/go-web-crawler/internal/requester"
+	"github.com/integralist/go-web-crawler/internal/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,8 +37,8 @@ var green = color.New(color.FgGreen).SprintFunc()
 var yellow = color.New(color.FgYellow).SprintFunc()
 
 // Init configures the package from an outside mediator
-func Init(logger *logrus.Entry, j, d bool, hc requester.HTTPClient) {
-	log = logger
+func Init(instr *types.Instrumentation, j, d bool, hc requester.HTTPClient) {
+	log = instr.Logger
 	json = j
 	dot = d
 	httpClient = hc

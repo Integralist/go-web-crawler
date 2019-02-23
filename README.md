@@ -162,8 +162,8 @@ go run -ldflags "-X main.version=71c00f0" cmd/crawler/main.go -hostname integral
 The final output from crawling `integralist.co.uk` was (at the time of writing):
 
 ```
-Number of URLs crawled and processed: 290
-Time: 20.310612456s
+Number of URLs crawled and processed: 285
+Time: 6.619973048s
 ```
 
 If you want to see json output of the site structure (all crawled pages, and any links/static assets found) then we need to provide the go program with a `-json` flag, which via Make is configured like so:
@@ -218,8 +218,8 @@ make run hostname=monzo.com
 The final output from crawling `monzo.com` was (at the time of writing):
 
 ```
-Number of URLs crawled and processed: 1053
-Time: 11m41.729154506s
+Number of URLs crawled and processed: 1047
+Time: 5m21.896589638s
 ```
 
 ## Structure
@@ -273,8 +273,9 @@ Some things that we should consider...
   - In the case of my blog, I don't necessarily care about crawling the tag endpoints.
 - Think of different approach to rendering large/complex graph data (either json or dot format).
   - Using graphviz didn't work out once the bidirection edges become large (as they do in my site).
-- Investigate golang patterns for configuring variables from outside a package.
-  - We can either modify exported package level vars, or use a custom `Init` function, but are there better ways to do this?
+- Finish my refactoring of configuring instrumentation.
+  - i.e. removal of package level `Init` functions in favour of dependency injection with new instrumentation type.
+  - also look at refactoring functions to avoid long signatures.
 
 ## How long did it take?
 

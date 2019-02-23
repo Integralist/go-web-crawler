@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/integralist/go-web-crawler/internal/requester"
+	"github.com/integralist/go-web-crawler/internal/types"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 )
@@ -38,8 +39,8 @@ type Page struct {
 }
 
 // Init configures the package from an outside mediator
-func Init(logger *logrus.Entry, p, h string) {
-	log = logger
+func Init(instr *types.Instrumentation, p, h string) {
+	log = instr.Logger
 	protocol = p
 	hostname = h
 }

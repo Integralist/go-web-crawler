@@ -12,7 +12,7 @@ import (
 	"github.com/integralist/go-web-crawler/internal/mapper"
 	"github.com/integralist/go-web-crawler/internal/parser"
 	"github.com/integralist/go-web-crawler/internal/requester"
-	"github.com/sirupsen/logrus"
+	"github.com/integralist/go-web-crawler/internal/types"
 )
 
 // green provides coloured output for text given to a string format function.
@@ -26,9 +26,8 @@ var results []mapper.Page
 
 // Init kick starts the configuration of various package level variables, then
 // begins the process of concurrently crawling pages.
-func Init(protocol, hostname string, subdomains []string, logger *logrus.Entry, json, dot bool) {
+func Init(protocol, hostname string, subdomains []string, json, dot bool, instr *types.Instrumentation) {
 	startTime := time.Now()
-	log := logger
 
 	// the following http client configuration is passed around so that when we
 	// make multiple GET requests we don't have to recreate the net/http client.
@@ -44,21 +43,21 @@ func Init(protocol, hostname string, subdomains []string, logger *logrus.Entry, 
 	// the trade-off from an Init function to exported variables is that the
 	// signature for Init is equally tedious when there are lots of things
 	// requiring configuration from outside the package.
-	crawler.Init(logger, json, dot, &httpClient)
-	mapper.Init(logger)
-	parser.Init(logger, protocol, hostname)
+	crawler.Init(instr, json, dot, &httpClient)
+	mapper.Init(instr)
+	parser.Init(instr, protocol, hostname)
 	parser.SetValidHosts(hostname, subdomains)
-	requester.Init(logger)
+	requester.Init(instr)
 
 	// request entrypoint web page
 	pageURL := fmt.Sprintf("%s://%s", protocol, hostname)
 	page, err := requester.Get(pageURL, &httpClient)
 	if err != nil {
-		log.Fatal(err)
+		instr.Logger.Fatal(err)
 	}
 
 	if page.Status != 200 {
-		log.Fatal("Non 200 for entry page")
+		instr.Logger.Fatal("Non 200 for entry page")
 	}
 
 	// to prevent doubling up the processing of urls that have already been
@@ -90,8 +89,8 @@ func Init(protocol, hostname string, subdomains []string, logger *logrus.Entry, 
 // process recursively calls itself and processes the next set of mapped pages.
 func process(mappedPages []mapper.Page) {
 	for _, page := range mappedPages {
-		nestedPages := crawler.Crawl(page, &trackedURLs)
-		tokenizedNestedPages := parser.ParseCollection(nestedPages)
+		crawledPages := crawler.Crawl(page, &trackedURLs)
+		tokenizedNestedPages := parser.ParseCollection(crawledPages)
 		mappedNestedPages := mapper.MapCollection(tokenizedNestedPages)
 
 		for _, mnp := range mappedNestedPages {

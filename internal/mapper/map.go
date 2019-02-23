@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/integralist/go-web-crawler/internal/parser"
+	"github.com/integralist/go-web-crawler/internal/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,8 +38,8 @@ var log *logrus.Entry
 var mutex = &sync.Mutex{}
 
 // Init configures the package from an outside mediator
-func Init(logger *logrus.Entry) {
-	log = logger
+func Init(instr *types.Instrumentation) {
+	log = instr.Logger
 }
 
 // Map associates static assets with its parent web page.
