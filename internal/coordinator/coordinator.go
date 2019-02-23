@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/integralist/go-web-crawler/internal/crawler"
 	"github.com/integralist/go-web-crawler/internal/formatter"
 	"github.com/integralist/go-web-crawler/internal/instrumentation"
@@ -14,9 +13,6 @@ import (
 	"github.com/integralist/go-web-crawler/internal/parser"
 	"github.com/integralist/go-web-crawler/internal/requester"
 )
-
-// green provides coloured output for text given to a string format function.
-var green = color.New(color.FgGreen).SprintFunc()
 
 // trackedURLs enables us to avoid requesting pages already processed.
 var trackedURLs sync.Map
@@ -76,13 +72,13 @@ func Init(protocol, hostname string, subdomains []string, json, dot bool, instr 
 	// mapper.Page type.
 	process([]mapper.Page{mappedPage})
 
+	// output the final results
 	if json {
 		fmt.Println(formatter.Pretty(results))
 	} else if dot {
 		fmt.Println(formatter.Dot(results))
 	} else {
-		fmt.Printf("-------------------------\n\nNumber of URLs crawled and processed: %s\n", green(len(results)))
-		fmt.Printf("Time: %s\n", green(time.Since(startTime)))
+		formatter.Standard(results, startTime)
 	}
 }
 
