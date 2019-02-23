@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/integralist/go-web-crawler/internal/types"
+	"github.com/integralist/go-web-crawler/internal/instrumentation"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,7 +24,7 @@ type Page struct {
 }
 
 // Init configures the package from an outside mediator
-func Init(instr *types.Instrumentation) {
+func Init(instr *instrumentation.Instr) {
 	log = instr.Logger
 }
 

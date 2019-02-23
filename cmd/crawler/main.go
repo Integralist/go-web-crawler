@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"github.com/integralist/go-web-crawler/internal/coordinator"
-	"github.com/integralist/go-web-crawler/internal/types"
+	"github.com/integralist/go-web-crawler/internal/instrumentation"
 	"github.com/sirupsen/logrus"
 )
 
 // instr contains pre-configured instrumentation tools
-var instr types.Instrumentation
+var instr instrumentation.Instr
 
 var (
 	dot        *bool
@@ -54,8 +54,8 @@ func init() {
 	// note: I prefer to configure instrumentation within the init function of
 	// the main package, but because I'm then passing this struct instance around
 	// to other functions in other packages, it means I need to use an exported
-	// reference from a mediator package (i.e. the types package)
-	instr = types.Instrumentation{
+	// reference from a mediator package (i.e. the instrumentation package)
+	instr = instrumentation.Instr{
 		Logger: logrus.WithFields(logrus.Fields{
 			"version":  version,
 			"hostname": hostname,

@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/integralist/go-web-crawler/internal/instrumentation"
 	"github.com/integralist/go-web-crawler/internal/parser"
-	"github.com/integralist/go-web-crawler/internal/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -38,7 +38,7 @@ var log *logrus.Entry
 var mutex = &sync.Mutex{}
 
 // Init configures the package from an outside mediator
-func Init(instr *types.Instrumentation) {
+func Init(instr *instrumentation.Instr) {
 	log = instr.Logger
 }
 
