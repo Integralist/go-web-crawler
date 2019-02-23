@@ -70,6 +70,10 @@ func Init(protocol, hostname string, subdomains []string, json, dot bool, instr 
 	//
 	// note: as the `process` function is recursive, we need to pass a slice of
 	// mapper.Page type.
+	//
+	// would be good to avoid the code smell of wrapping our single page instance
+	// within a slice by maybe replacing the []T with variadic arguments, but
+	// that is likely to result in other trade-offs.
 	process([]mapper.Page{mappedPage})
 
 	// output the final results
