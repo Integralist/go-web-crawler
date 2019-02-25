@@ -43,7 +43,7 @@ var green = color.New(color.FgGreen).SprintFunc()
 var yellow = color.New(color.FgYellow).SprintFunc()
 
 // Init configures the package from an outside mediator
-func Init(instr *instrumentator.Instr, j, d bool, hc requester.HTTPClient) {
+func Init(j, d bool, hc requester.HTTPClient, instr *instrumentator.Instr) {
 	log = instr.Logger
 	json = j
 	dot = d

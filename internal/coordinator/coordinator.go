@@ -19,24 +19,6 @@ type ProcessedResults []mapper.Page
 // analysis is an accumulator of the pages that have been crawled so far.
 type analysis []mapper.Page
 
-// Init kick starts the configuration of various package level variables, then
-// begins the process of concurrently crawling pages.
-func Init(protocol, hostname, subdomains string, json, dot bool, httpclient requester.HTTPClient, instr *instrumentator.Instr) {
-	// ensure imported packages have the right configuration, which makes the
-	// code easier to manage compared to injecting these objects as dependencies
-	// into all function calls (as it makes the function signatures messy as well
-	// as makes nested function calls tedious).
-	//
-	// the trade-off from an Init function to exported variables is that the
-	// signature for Init is equally tedious when there are lots of things
-	// requiring configuration from outside the package.
-	crawler.Init(instr, json, dot, httpclient)
-	mapper.Init(instr)
-	parser.Init(instr, protocol, hostname)
-	parser.SetValidHosts(hostname, subdomains)
-	requester.Init(instr)
-}
-
 // Start begins crawling the given website starting with the entry page.
 func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *instrumentator.Instr) ProcessedResults {
 	// request entrypoint web page

@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"github.com/integralist/go-web-crawler/internal/coordinator"
+	"github.com/integralist/go-web-crawler/internal/crawler"
 	"github.com/integralist/go-web-crawler/internal/instrumentator"
+	"github.com/integralist/go-web-crawler/internal/mapper"
+	"github.com/integralist/go-web-crawler/internal/parser"
+	"github.com/integralist/go-web-crawler/internal/requester"
 	"github.com/sirupsen/logrus"
 )
 
@@ -90,8 +94,14 @@ func main() {
 	// we will time how long our program takes to run.
 	startTime := time.Now()
 
+	// TODO: remove these Init calls altogether
+	// initialize our packages with the relevant configuration
+	crawler.Init(*json, *dot, &httpClient, &instr)
+	mapper.Init(&instr)
+	parser.Init(protocol, hostname, subdomains, &instr)
+	requester.Init(&instr)
+
 	// TODO: redesign initalization as large signatures are a code smell
-	coordinator.Init(protocol, hostname, subdomains, *json, *dot, &httpClient, &instr)
 	results := coordinator.Start(protocol, hostname, &httpClient, &instr)
 	coordinator.Results(results, *json, *dot, startTime)
 }

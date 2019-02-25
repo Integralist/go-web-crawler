@@ -24,10 +24,7 @@ func TestMap(t *testing.T) {
 	logger := instrumentator.Instr{
 		Logger: logrus.NewEntry(logrus.New()),
 	}
-	parser.Init(&logger, "http", "example.com")
-
-	// also need to ensure we tell the parser what hosts are valid
-	parser.SetValidHosts("example.com", "www")
+	parser.Init("http", "example.com", "www", &logger)
 
 	// notice 'foo' assets appear twice but should be filtered out by the mapper
 	// so that there is only one of them for each type (link/script).

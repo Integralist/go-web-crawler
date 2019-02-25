@@ -40,13 +40,14 @@ type Page struct {
 }
 
 // Init configures the package from an outside mediator
-func Init(instr *instrumentator.Instr, p, h string) {
-	log = instr.Logger
+func Init(p, h, s string, instr *instrumentator.Instr) {
 	protocol = p
 	hostname = h
+	log = instr.Logger
+	setValidHosts(h, s)
 }
 
-// SetValidHosts sets map of valid URLs that are then used for inspecting the
+// setValidHosts sets map of valid URLs that are then used for inspecting the
 // returned HTML from a HTTP GET request.
 //
 // The implementation optimizes for performance and so it uses a map data
@@ -58,7 +59,7 @@ func Init(instr *instrumentator.Instr, p, h string) {
 //
 // Note: I considered returning interface instead of manual type, but opted for
 // simpler code (wasn't sure there was any real benefit to an interface type)
-func SetValidHosts(hostname string, subdomains string) {
+func setValidHosts(hostname string, subdomains string) {
 	validURLs := map[string]bool{}
 	subdomainsParsed := strings.Split(subdomains, ",")
 
