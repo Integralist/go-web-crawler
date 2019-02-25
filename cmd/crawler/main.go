@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
-	"strings"
+	"time"
 
 	"github.com/integralist/go-web-crawler/internal/coordinator"
 	"github.com/integralist/go-web-crawler/internal/instrumentator"
@@ -80,8 +81,16 @@ func main() {
 		protocol = "http"
 	}
 
-	subdomainsParsed := strings.Split(subdomains, ",")
+	// the following http client configuration is passed around so that when we
+	// make multiple GET requests we don't have to recreate the net/http client.
+	httpClient := http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+
+	startTime := time.Now()
 
 	// TODO: redesign initalization as large signatures are a code smell
-	coordinator.Init(protocol, hostname, subdomainsParsed, *json, *dot, &instr)
+	coordinator.Init(protocol, hostname, subdomains, *json, *dot, &httpClient, &instr)
+	coordinator.Start(protocol, hostname, &httpClient, &instr)
+	coordinator.Results(*json, *dot, startTime)
 }

@@ -2,7 +2,7 @@ package coordinator
 
 import (
 	"fmt"
-	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,14 +22,8 @@ var results []mapper.Page
 
 // Init kick starts the configuration of various package level variables, then
 // begins the process of concurrently crawling pages.
-func Init(protocol, hostname string, subdomains []string, json, dot bool, instr *instrumentator.Instr) {
-	startTime := time.Now()
-
-	// the following http client configuration is passed around so that when we
-	// make multiple GET requests we don't have to recreate the net/http client.
-	httpClient := http.Client{
-		Timeout: time.Duration(5 * time.Second),
-	}
+func Init(protocol, hostname, subdomains string, json, dot bool, httpclient requester.HTTPClient, instr *instrumentator.Instr) {
+	subdomainsParsed := strings.Split(subdomains, ",")
 
 	// ensure imported packages have the right configuration, which makes the
 	// code easier to manage compared to injecting these objects as dependencies
@@ -39,15 +33,18 @@ func Init(protocol, hostname string, subdomains []string, json, dot bool, instr 
 	// the trade-off from an Init function to exported variables is that the
 	// signature for Init is equally tedious when there are lots of things
 	// requiring configuration from outside the package.
-	crawler.Init(instr, json, dot, &httpClient)
+	crawler.Init(instr, json, dot, httpclient)
 	mapper.Init(instr)
 	parser.Init(instr, protocol, hostname)
-	parser.SetValidHosts(hostname, subdomains)
+	parser.SetValidHosts(hostname, subdomainsParsed)
 	requester.Init(instr)
+}
 
+// Start begins crawling the given website starting with the entry page.
+func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *instrumentator.Instr) {
 	// request entrypoint web page
 	pageURL := fmt.Sprintf("%s://%s", protocol, hostname)
-	page, err := requester.Get(pageURL, &httpClient)
+	page, err := requester.Get(pageURL, httpclient)
 	if err != nil {
 		instr.Logger.Fatal(err)
 	}
@@ -75,8 +72,10 @@ func Init(protocol, hostname string, subdomains []string, json, dot bool, instr 
 	// within a slice by maybe replacing the []T with variadic arguments, but
 	// that is likely to result in other trade-offs.
 	process([]mapper.Page{mappedPage})
+}
 
-	// output the final results
+// Results displays the final output for the program.
+func Results(json, dot bool, startTime time.Time) {
 	if json {
 		fmt.Println(formatter.Pretty(results))
 	} else if dot {
