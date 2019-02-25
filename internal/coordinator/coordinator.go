@@ -8,7 +8,7 @@ import (
 
 	"github.com/integralist/go-web-crawler/internal/crawler"
 	"github.com/integralist/go-web-crawler/internal/formatter"
-	"github.com/integralist/go-web-crawler/internal/instrumentation"
+	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/mapper"
 	"github.com/integralist/go-web-crawler/internal/parser"
 	"github.com/integralist/go-web-crawler/internal/requester"
@@ -22,7 +22,7 @@ var results []mapper.Page
 
 // Init kick starts the configuration of various package level variables, then
 // begins the process of concurrently crawling pages.
-func Init(protocol, hostname string, subdomains []string, json, dot bool, instr *instrumentation.Instr) {
+func Init(protocol, hostname string, subdomains []string, json, dot bool, instr *instrumentator.Instr) {
 	startTime := time.Now()
 
 	// the following http client configuration is passed around so that when we

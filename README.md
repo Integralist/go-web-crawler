@@ -90,10 +90,11 @@ The mapper has two exported functions:
 
 ### Formatter
 
-The formatter is used when passing either the `-json` or `-dot` flags. It currently offers two exported functions:
+The formatter is used when passing either the `-json` or `-dot` flags. It currently offers three exported functions:
 
 - `Dot`: transforms the results data into dot format notation for use with generating a site map graph via [graphviz](https://www.graphviz.org).
 - `Pretty`: pretty prints any given data structure (for easier debugging/visualization).
+- `Standard`: the default output format used (number of URLs crawled/processed and the total time it took).
 
 The `Dot` output will be (for `integralist.co.uk`) something like the following (albeit much longer):
 
@@ -241,16 +242,21 @@ The project follows the guidelines as defined by:
     ├── coordinator
     │   └── coordinator.go
     ├── crawler
-    │   └── crawl.go
+    │   └── crawler.go
     ├── formatter
-    │   └── format.go
+    │   ├── formatter.go
+    │   └── formatter_test.go
+    ├── instrumentator
+    │   └── instrumentator.go
     ├── mapper
-    │   └── map.go
+    │   ├── mapper.go
+    │   └── mapper_test.go
     ├── parser
-    │   ├── parse.go
-    │   └── parse_unexported.go
+    │   ├── filters.go
+    │   └── parser.go
     └── requester
-        └── http.go
+        ├── http.go
+        └── http_test.go
 ```
 
 ## Improvements
@@ -267,15 +273,15 @@ Some things that we should consider...
 
 ## TODO
 
-- Tests (YOLO - I managed to squeeze in some, but I'll finish this up another time).
-  - Might require some code redesign to better support interfaces + dependency injection.
-- Ignore URLs based on pattern (e.g. `/tags/...`).
-  - In the case of my blog, I don't necessarily care about crawling the tag endpoints.
-- Think of different approach to rendering large/complex graph data (either json or dot format).
-  - Using graphviz didn't work out once the bidirection edges become large (as they do in my site).
+- Tests (there are some, but coverage is weak).
+  - Might also require some code redesign to better support interfaces + dependency injection.
 - Finish my refactoring of configuring instrumentation.
   - i.e. removal of package level `Init` functions in favour of dependency injection with new instrumentation type.
   - also look at refactoring functions to avoid long signatures.
+- Think of different approach to rendering large/complex graph data (either json or dot format).
+  - Using graphviz didn't work out once the bidirection edges become large (as they do in my site).
+- Ignore URLs based on pattern (e.g. `/tags/...`).
+  - In the case of my blog, I don't necessarily care about crawling the tag endpoints.
 
 ## How long did it take?
 

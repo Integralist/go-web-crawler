@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/integralist/go-web-crawler/internal/instrumentation"
+	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/mapper"
 	"github.com/integralist/go-web-crawler/internal/requester"
 	"github.com/sirupsen/logrus"
@@ -37,7 +37,7 @@ var green = color.New(color.FgGreen).SprintFunc()
 var yellow = color.New(color.FgYellow).SprintFunc()
 
 // Init configures the package from an outside mediator
-func Init(instr *instrumentation.Instr, j, d bool, hc requester.HTTPClient) {
+func Init(instr *instrumentator.Instr, j, d bool, hc requester.HTTPClient) {
 	log = instr.Logger
 	json = j
 	dot = d

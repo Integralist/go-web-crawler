@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/integralist/go-web-crawler/internal/instrumentation"
+	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/requester"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
@@ -39,7 +39,7 @@ type Page struct {
 }
 
 // Init configures the package from an outside mediator
-func Init(instr *instrumentation.Instr, p, h string) {
+func Init(instr *instrumentator.Instr, p, h string) {
 	log = instr.Logger
 	protocol = p
 	hostname = h

@@ -3,6 +3,7 @@ package mapper
 import (
 	"testing"
 
+	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/parser"
 	"github.com/integralist/go-web-crawler/internal/requester"
 	"github.com/sirupsen/logrus"
@@ -20,8 +21,10 @@ more overhead in running the tests, and it starts to mimic more an
 
 func TestMap(t *testing.T) {
 	// we need to ensure a logger is initialized
-	logger := logrus.NewEntry(logrus.New())
-	parser.Init(logger, "http", "example.com")
+	logger := instrumentator.Instr{
+		Logger: logrus.NewEntry(logrus.New()),
+	}
+	parser.Init(&logger, "http", "example.com")
 
 	// also need to ensure we tell the parser what hosts are valid
 	parser.SetValidHosts("example.com", []string{"www"})
