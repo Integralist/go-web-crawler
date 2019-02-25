@@ -87,10 +87,11 @@ func main() {
 		Timeout: time.Duration(5 * time.Second),
 	}
 
+	// we will time how long our program takes to run.
 	startTime := time.Now()
 
 	// TODO: redesign initalization as large signatures are a code smell
 	coordinator.Init(protocol, hostname, subdomains, *json, *dot, &httpClient, &instr)
-	coordinator.Start(protocol, hostname, &httpClient, &instr)
-	coordinator.Results(*json, *dot, startTime)
+	results := coordinator.Start(protocol, hostname, &httpClient, &instr)
+	coordinator.Results(results, *json, *dot, startTime)
 }

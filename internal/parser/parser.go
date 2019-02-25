@@ -3,6 +3,7 @@ package parser
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -57,10 +58,11 @@ func Init(instr *instrumentator.Instr, p, h string) {
 //
 // Note: I considered returning interface instead of manual type, but opted for
 // simpler code (wasn't sure there was any real benefit to an interface type)
-func SetValidHosts(hostname string, subdomains []string) {
+func SetValidHosts(hostname string, subdomains string) {
 	validURLs := map[string]bool{}
+	subdomainsParsed := strings.Split(subdomains, ",")
 
-	for _, subdomain := range subdomains {
+	for _, subdomain := range subdomainsParsed {
 		dot := "."
 		if subdomain == "" {
 			dot = ""

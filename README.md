@@ -282,6 +282,8 @@ Some things that we should consider...
   - Using graphviz didn't work out once the bidirection edges become large (as they do in my site).
 - Ignore URLs based on pattern (e.g. `/tags/...`).
   - In the case of my blog, I don't necessarily care about crawling the tag endpoints.
+- Fix duplicated URLs with trailing slashes.
+  - e.g. `https://www.integralist.co.uk/posts` vs `https://www.integralist.co.uk/posts/`
 
 ## How long did it take?
 

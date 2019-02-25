@@ -2,7 +2,6 @@ package coordinator
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -14,17 +13,15 @@ import (
 	"github.com/integralist/go-web-crawler/internal/requester"
 )
 
-// trackedURLs enables us to avoid requesting pages already processed.
-var trackedURLs sync.Map
+// ProcessedResults are the final results slice containing all crawled pages.
+type ProcessedResults []mapper.Page
 
-// results stores the final structure of crawled pages and their assets.
-var results []mapper.Page
+// analysis is an accumulator of the pages that have been crawled so far.
+type analysis []mapper.Page
 
 // Init kick starts the configuration of various package level variables, then
 // begins the process of concurrently crawling pages.
 func Init(protocol, hostname, subdomains string, json, dot bool, httpclient requester.HTTPClient, instr *instrumentator.Instr) {
-	subdomainsParsed := strings.Split(subdomains, ",")
-
 	// ensure imported packages have the right configuration, which makes the
 	// code easier to manage compared to injecting these objects as dependencies
 	// into all function calls (as it makes the function signatures messy as well
@@ -36,12 +33,12 @@ func Init(protocol, hostname, subdomains string, json, dot bool, httpclient requ
 	crawler.Init(instr, json, dot, httpclient)
 	mapper.Init(instr)
 	parser.Init(instr, protocol, hostname)
-	parser.SetValidHosts(hostname, subdomainsParsed)
+	parser.SetValidHosts(hostname, subdomains)
 	requester.Init(instr)
 }
 
 // Start begins crawling the given website starting with the entry page.
-func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *instrumentator.Instr) {
+func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *instrumentator.Instr) ProcessedResults {
 	// request entrypoint web page
 	pageURL := fmt.Sprintf("%s://%s", protocol, hostname)
 	page, err := requester.Get(pageURL, httpclient)
@@ -55,6 +52,7 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 
 	// to prevent doubling up the processing of urls that have already been
 	// handled, we'll use a a hash table for O(1) constant time lookups.
+	trackedURLs := new(sync.Map)
 	trackedURLs.Store(pageURL, true)
 
 	// parse the requested page
@@ -62,6 +60,9 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 
 	// map the tokenized page, and its assets
 	mappedPage := mapper.Map(tokenizedPage)
+
+	// results stores the final structure of crawled pages and their assets.
+	var results []mapper.Page
 
 	// now we have the initial page analysis, we'll process the anchors.
 	//
@@ -71,11 +72,14 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 	// would be good to avoid the code smell of wrapping our single page instance
 	// within a slice by maybe replacing the []T with variadic arguments, but
 	// that is likely to result in other trade-offs.
-	process([]mapper.Page{mappedPage})
+	entryPage := analysis{mappedPage}
+	results = process(entryPage, results, trackedURLs)
+
+	return results
 }
 
 // Results displays the final output for the program.
-func Results(json, dot bool, startTime time.Time) {
+func Results(results []mapper.Page, json, dot bool, startTime time.Time) {
 	if json {
 		fmt.Println(formatter.Pretty(results))
 	} else if dot {
@@ -86,9 +90,9 @@ func Results(json, dot bool, startTime time.Time) {
 }
 
 // process recursively calls itself and processes the next set of mapped pages.
-func process(mappedPages []mapper.Page) {
+func process(mappedPages analysis, results []mapper.Page, trackedURLs crawler.Tracker) ProcessedResults {
 	for _, page := range mappedPages {
-		crawledPages := crawler.Crawl(page, &trackedURLs)
+		crawledPages := crawler.Crawl(page, trackedURLs)
 		tokenizedNestedPages := parser.ParseCollection(crawledPages)
 		mappedNestedPages := mapper.MapCollection(tokenizedNestedPages)
 
@@ -96,6 +100,10 @@ func process(mappedPages []mapper.Page) {
 			results = append(results, mnp)
 		}
 
-		process(mappedNestedPages)
+		// reassign the results so we can return them up the stack back to the
+		// original caller for final display
+		results = process(mappedNestedPages, results, trackedURLs)
 	}
+
+	return results
 }

@@ -27,7 +27,7 @@ func TestMap(t *testing.T) {
 	parser.Init(&logger, "http", "example.com")
 
 	// also need to ensure we tell the parser what hosts are valid
-	parser.SetValidHosts("example.com", []string{"www"})
+	parser.SetValidHosts("example.com", "www")
 
 	// notice 'foo' assets appear twice but should be filtered out by the mapper
 	// so that there is only one of them for each type (link/script).

@@ -13,6 +13,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Tracker is a simplified version of sync.Map which will aid with testing.
+type Tracker interface {
+	Load(key interface{}) (value interface{}, ok bool)
+	Store(key, value interface{})
+}
+
 const defaultWorkerPool = 20
 
 // dot indicates whether we should be outputting any print information
@@ -45,7 +51,7 @@ func Init(instr *instrumentator.Instr, j, d bool, hc requester.HTTPClient) {
 }
 
 // Crawl concurrently requests URLs extracted from a slice of mapper.Page
-func Crawl(mappedPage mapper.Page, trackedURLs *sync.Map) []requester.Page {
+func Crawl(mappedPage mapper.Page, trackedURLs Tracker) []requester.Page {
 	toProcess := len(mappedPage.Anchors)
 
 	// avoid printing to stdout if user has requested json/dot formatted output
