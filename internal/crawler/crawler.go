@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/integralist/go-web-crawler/internal/formatter"
 	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/mapper"
 	"github.com/integralist/go-web-crawler/internal/requester"
@@ -33,15 +33,6 @@ var log *logrus.Entry
 // httpClient is a preconfigured HTTP client.
 var httpClient requester.HTTPClient
 
-// red provides coloured output for text given to a string format function.
-var red = color.New(color.FgRed).SprintFunc()
-
-// green provides coloured output for text given to a string format function.
-var green = color.New(color.FgGreen).SprintFunc()
-
-// yellow provides coloured output for text given to a string format function.
-var yellow = color.New(color.FgYellow).SprintFunc()
-
 // Init configures the package from an outside mediator
 func Init(j, d bool, hc requester.HTTPClient, instr *instrumentator.Instr) {
 	log = instr.Logger
@@ -58,14 +49,14 @@ func Crawl(mappedPage mapper.Page, trackedURLs Tracker) []requester.Page {
 	if !json && !dot {
 		fmt.Println("-------------------------")
 		fmt.Println(mappedPage.URL)
-		fmt.Printf("Contains %s URLs to crawl\n", red(toProcess))
+		fmt.Printf("Contains %s URLs to crawl\n", formatter.Red(toProcess))
 	}
 
 	// if the page has no anchors associated within it, then we'll skip
 	// processing the current page
 	if toProcess < 1 {
 		if !json && !dot {
-			fmt.Printf("Crawled %s URLs %s\n\n", green("0"), green("(no pages requested)"))
+			fmt.Printf("Crawled %s URLs %s\n\n", formatter.Green("0"), formatter.Green("(no pages requested)"))
 		}
 		return []requester.Page{}
 	}
@@ -126,14 +117,14 @@ func Crawl(mappedPage mapper.Page, trackedURLs Tracker) []requester.Page {
 	// red: we request the full number of URLs
 	// yellow: we requested less than expected (as duplicates were found)
 	// green: we requested zero URLs (as duplicates were found)
-	counterOut := red(strconv.Itoa(toProcess))
+	counterOut := formatter.Red(strconv.Itoa(toProcess))
 	msg := ""
 	if counter < toProcess {
-		counterOut = yellow(counter)
+		counterOut = formatter.Yellow(counter)
 	}
 	if counter == 0 {
-		counterOut = green(counter)
-		msg = green("(no pages requested)")
+		counterOut = formatter.Green(counter)
+		msg = formatter.Green("(no pages requested)")
 	}
 
 	// avoid printing to stdout if user has requested json/dot formatted output

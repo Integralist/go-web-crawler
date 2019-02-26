@@ -12,8 +12,14 @@ import (
 	"github.com/integralist/go-web-crawler/internal/mapper"
 )
 
-// green provides coloured output for text given to a string format function.
-var green = color.New(color.FgGreen).SprintFunc()
+// Red provides coloured output for text given to a string format function.
+var Red = color.New(color.FgRed).SprintFunc()
+
+// Green provides coloured output for text given to a string format function.
+var Green = color.New(color.FgGreen).SprintFunc()
+
+// Yellow provides coloured output for text given to a string format function.
+var Yellow = color.New(color.FgYellow).SprintFunc()
 
 // map of template functions that enable us to identify the final item within a
 // collection being iterated over.
@@ -56,6 +62,6 @@ func Pretty(v interface{}) (s string) {
 
 // Standard is the default formatted output for the program
 func Standard(results []mapper.Page, startTime time.Time) {
-	fmt.Printf("-------------------------\n\nNumber of URLs crawled and processed: %s\n", green(len(results)))
-	fmt.Printf("Time: %s\n", green(time.Since(startTime)))
+	fmt.Printf("-------------------------\n\nNumber of URLs crawled and processed: %s\n", Green(len(results)))
+	fmt.Printf("Time: %s\n", Green(time.Since(startTime)))
 }
