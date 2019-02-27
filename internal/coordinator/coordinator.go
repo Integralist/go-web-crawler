@@ -35,7 +35,7 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 	trackedURLs.Store(pageURL, true)
 
 	// parse the requested page
-	tokenizedPage := parser.Parse(page)
+	tokenizedPage := parser.Parse(page, instr)
 
 	// map the tokenized page, and its assets
 	mappedPage := mapper.Map(tokenizedPage)
@@ -52,7 +52,7 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 	// within a slice by maybe replacing the []T with variadic arguments, but
 	// that is likely to result in other trade-offs.
 	entryPage := ProcessedResults{mappedPage}
-	results = process(entryPage, results, trackedURLs)
+	results = process(entryPage, results, trackedURLs, instr)
 
 	return results
 }
@@ -69,11 +69,11 @@ func Results(results []mapper.Page, json, dot bool, startTime time.Time) {
 }
 
 // process recursively calls itself and processes the next set of mapped pages.
-func process(mappedPages ProcessedResults, results []mapper.Page, trackedURLs crawler.Tracker) ProcessedResults {
+func process(mappedPages ProcessedResults, results []mapper.Page, trackedURLs crawler.Tracker, instr *instrumentator.Instr) ProcessedResults {
 	for _, page := range mappedPages {
-		crawledPages := crawler.Crawl(page, trackedURLs)
-		tokenizedNestedPages := parser.ParseCollection(crawledPages)
-		mappedNestedPages := mapper.MapCollection(tokenizedNestedPages)
+		crawledPages := crawler.Crawl(page, trackedURLs, instr)
+		tokenizedNestedPages := parser.ParseCollection(crawledPages, instr)
+		mappedNestedPages := mapper.MapCollection(tokenizedNestedPages, instr)
 
 		for _, mnp := range mappedNestedPages {
 			results = append(results, mnp)
@@ -81,7 +81,7 @@ func process(mappedPages ProcessedResults, results []mapper.Page, trackedURLs cr
 
 		// reassign the results so we can return them up the stack back to the
 		// original caller for final display
-		results = process(mappedNestedPages, results, trackedURLs)
+		results = process(mappedNestedPages, results, trackedURLs, instr)
 	}
 
 	return results

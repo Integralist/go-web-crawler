@@ -3,9 +3,6 @@ package requester
 import (
 	"io/ioutil"
 	"net/http"
-
-	"github.com/integralist/go-web-crawler/internal/instrumentator"
-	"github.com/sirupsen/logrus"
 )
 
 // HTTPClient is an interface for injecting a preconfigured HTTP client.
@@ -13,19 +10,11 @@ type HTTPClient interface {
 	Get(url string) (*http.Response, error)
 }
 
-// log is a preconfigured logger instance and is set by the coordinator package.
-var log *logrus.Entry
-
 // Page represents the requested HTML page (its url & body).
 type Page struct {
 	URL    string
 	Body   []byte
 	Status int
-}
-
-// Init configures the package from an outside mediator
-func Init(instr *instrumentator.Instr) {
-	log = instr.Logger
 }
 
 // Get retrieves the contents of the specified url parameter.

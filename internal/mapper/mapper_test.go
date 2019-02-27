@@ -21,10 +21,10 @@ more overhead in running the tests, and it starts to mimic more an
 
 func TestMap(t *testing.T) {
 	// we need to ensure a logger is initialized
-	logger := instrumentator.Instr{
+	instr := instrumentator.Instr{
 		Logger: logrus.NewEntry(logrus.New()),
 	}
-	parser.Init("http", "example.com", "www", &logger)
+	parser.Init("http", "example.com", "www")
 
 	// notice 'foo' assets appear twice but should be filtered out by the mapper
 	// so that there is only one of them for each type (link/script).
@@ -53,7 +53,7 @@ func TestMap(t *testing.T) {
 		Status: 200,
 	}
 
-	input := parser.Parse(page)
+	input := parser.Parse(page, &instr)
 
 	output := Page{
 		URL: "http://www.example.com",

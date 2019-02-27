@@ -10,7 +10,6 @@ import (
 	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/mapper"
 	"github.com/integralist/go-web-crawler/internal/requester"
-	"github.com/sirupsen/logrus"
 )
 
 // Tracker is a simplified version of sync.Map which will aid with testing.
@@ -27,22 +26,18 @@ var dot bool
 // json indicates whether we should be outputting any print information.
 var json bool
 
-// log is a preconfigured logger instance.
-var log *logrus.Entry
-
 // httpClient is a preconfigured HTTP client.
 var httpClient requester.HTTPClient
 
 // Init configures the package from an outside mediator
-func Init(j, d bool, hc requester.HTTPClient, instr *instrumentator.Instr) {
-	log = instr.Logger
+func Init(j, d bool, hc requester.HTTPClient) {
 	json = j
 	dot = d
 	httpClient = hc
 }
 
 // Crawl concurrently requests URLs extracted from a slice of mapper.Page
-func Crawl(mappedPage mapper.Page, trackedURLs Tracker) []requester.Page {
+func Crawl(mappedPage mapper.Page, trackedURLs Tracker, instr *instrumentator.Instr) []requester.Page {
 	toProcess := len(mappedPage.Anchors)
 
 	// avoid printing to stdout if user has requested json/dot formatted output
@@ -86,7 +81,7 @@ func Crawl(mappedPage mapper.Page, trackedURLs Tracker) []requester.Page {
 			for url := range tasks {
 				page, err := requester.Get(url, httpClient)
 				if err != nil {
-					log.Warn(err)
+					instr.Logger.Warn(err)
 					continue
 				}
 				trackedURLs.Store(url, true)
@@ -132,7 +127,7 @@ func Crawl(mappedPage mapper.Page, trackedURLs Tracker) []requester.Page {
 		fmt.Printf("Crawled %s URLs %s\n\n", counterOut, msg)
 	}
 
-	log.Debug("time spent crawling:", time.Since(startTime))
+	instr.Logger.Debug("time spent crawling:", time.Since(startTime))
 
 	return pages
 }

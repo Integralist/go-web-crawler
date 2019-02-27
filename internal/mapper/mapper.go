@@ -15,10 +15,12 @@ import (
 
 	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/parser"
-	"github.com/sirupsen/logrus"
 )
 
 const defaultWorkerPool = 20
+
+// the mapper is executed concurrently, so we need appends to be thread-safe.
+var mutex = &sync.Mutex{}
 
 // Assets represents a collection of related filtered HTML elements.
 type Assets []string
@@ -29,17 +31,6 @@ type Page struct {
 	Links   Assets
 	Scripts Assets
 	URL     string
-}
-
-// log is a preconfigured logger instance and is set by the coordinator package.
-var log *logrus.Entry
-
-// the mapper is executed concurrently, so we need appends to be thread-safe.
-var mutex = &sync.Mutex{}
-
-// Init configures the package from an outside mediator
-func Init(instr *instrumentator.Instr) {
-	log = instr.Logger
 }
 
 // Map associates static assets with its parent web page.
@@ -86,7 +77,7 @@ func appendWhenNotTracked(key string, collection Assets, assets parser.Assets, t
 }
 
 // MapCollection concurrently maps a slice of parser.Page
-func MapCollection(pages []parser.Page) []Page {
+func MapCollection(pages []parser.Page, instr *instrumentator.Instr) []Page {
 	var wg sync.WaitGroup
 	var mappedPages []Page
 
@@ -125,7 +116,7 @@ func MapCollection(pages []parser.Page) []Page {
 	close(tasks)
 
 	wg.Wait()
-	log.Debug("time spent mapping:", time.Since(startTime))
+	instr.Logger.Debug("time spent mapping:", time.Since(startTime))
 
 	return mappedPages
 }

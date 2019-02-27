@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 )
@@ -13,11 +14,14 @@ import (
 var imagePattern, _ = regexp.Compile("(?:doc|ico|pdf|gif|jpg|png)")
 
 // we want to ignore urls with fragments and parsing external domains
-func excludeInvalidURLs(token *html.Token, key string) bool {
+func excludeInvalidURLs(token *html.Token, key string, instr *instrumentator.Instr) bool {
 	for i, a := range token.Attr {
 		if a.Key == key {
 			rawurl := a.Val
-			log := log.WithFields(logrus.Fields{"url": rawurl})
+
+			// TODO: figure out better way to do this type of thing, as I feel this
+			// is tightly coupling us to logrus.
+			log := instr.Logger.WithFields(logrus.Fields{"url": rawurl})
 
 			url, err := url.Parse(rawurl)
 			if err != nil {

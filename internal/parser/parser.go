@@ -9,14 +9,10 @@ import (
 
 	"github.com/integralist/go-web-crawler/internal/instrumentator"
 	"github.com/integralist/go-web-crawler/internal/requester"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 )
 
 const defaultWorkerPool = 20
-
-// log is a preconfigured logger instance and is set by the coordinator package.
-var log *logrus.Entry
 
 // protocol is the scheme the user has specified (HTTPS or HTTP)
 var protocol string
@@ -40,10 +36,9 @@ type Page struct {
 }
 
 // Init configures the package from an outside mediator
-func Init(p, h, s string, instr *instrumentator.Instr) {
+func Init(p, h, s string) {
 	protocol = p
 	hostname = h
-	log = instr.Logger
 	setValidHosts(h, s)
 }
 
@@ -77,7 +72,7 @@ func setValidHosts(hostname string, subdomains string) {
 
 // Parse accepts a read http.Request body and tokenizes it. It will construct a
 // page struct consisting of the anchors, links and scripts for the given page.
-func Parse(page requester.Page) Page {
+func Parse(page requester.Page, instr *instrumentator.Instr) Page {
 	var anchors []html.Token
 	var links []html.Token
 	var scripts []html.Token
@@ -90,7 +85,7 @@ func Parse(page requester.Page) Page {
 
 		switch {
 		case tt == html.ErrorToken:
-			log.Debug("PARSER_EOF")
+			instr.Logger.Debug("PARSER_EOF")
 
 			return Page{
 				URL:     page.URL,
@@ -109,11 +104,11 @@ func Parse(page requester.Page) Page {
 				continue
 			}
 
-			if (isAnchor || isLink) && excludeInvalidURLs(&t, "href") {
+			if (isAnchor || isLink) && excludeInvalidURLs(&t, "href", instr) {
 				continue
 			}
 
-			if isScript && (missingScriptSrc(t.Attr) || excludeInvalidURLs(&t, "src")) {
+			if isScript && (missingScriptSrc(t.Attr) || excludeInvalidURLs(&t, "src", instr)) {
 				continue
 			}
 
@@ -133,7 +128,7 @@ func Parse(page requester.Page) Page {
 }
 
 // ParseCollection concurrently parses a slice of requester.Page
-func ParseCollection(pages []requester.Page) []Page {
+func ParseCollection(pages []requester.Page, instr *instrumentator.Instr) []Page {
 	var mutex = &sync.Mutex{}
 	var wg sync.WaitGroup
 	var tokenizedPages []Page
@@ -157,7 +152,7 @@ func ParseCollection(pages []requester.Page) []Page {
 			defer wg.Done()
 
 			for page := range tasks {
-				tokenizedPage := Parse(page)
+				tokenizedPage := Parse(page, instr)
 
 				mutex.Lock()
 				tokenizedPages = append(tokenizedPages, tokenizedPage)
@@ -168,7 +163,7 @@ func ParseCollection(pages []requester.Page) []Page {
 
 	for _, page := range pages {
 		if page.Status != 200 {
-			log.Debug("non 200 page:", page.URL)
+			instr.Logger.Debug("non 200 page:", page.URL)
 			continue
 		}
 		tasks <- page
@@ -177,7 +172,7 @@ func ParseCollection(pages []requester.Page) []Page {
 	close(tasks)
 
 	wg.Wait()
-	log.Debug("time spent parsing:", time.Since(startTime))
+	instr.Logger.Debug("time spent parsing:", time.Since(startTime))
 
 	return tokenizedPages
 }
