@@ -93,7 +93,7 @@ func main() {
 	startTime := time.Now()
 
 	// initialize our packages with the relevant configuration
-	crawler.Init(*json, *dot, &httpClient)
+	crawler.Init(*json, *dot)
 	parser.Init(protocol, hostname, subdomains)
 
 	// trigger the coordinator to kick start the program

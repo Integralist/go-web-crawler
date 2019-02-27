@@ -26,18 +26,16 @@ var dot bool
 // json indicates whether we should be outputting any print information.
 var json bool
 
-// httpClient is a preconfigured HTTP client.
-var httpClient requester.HTTPClient
-
 // Init configures the package from an outside mediator
-func Init(j, d bool, hc requester.HTTPClient) {
+func Init(j, d bool) {
+	// it's ok to have json/dot as package level variables as they don't have a
+	// direct effect on the running of the program (other than information output)
 	json = j
 	dot = d
-	httpClient = hc
 }
 
 // Crawl concurrently requests URLs extracted from a slice of mapper.Page
-func Crawl(mappedPage mapper.Page, trackedURLs Tracker, instr *instrumentator.Instr) []requester.Page {
+func Crawl(mappedPage mapper.Page, trackedURLs Tracker, httpclient requester.HTTPClient, instr *instrumentator.Instr) []requester.Page {
 	toProcess := len(mappedPage.Anchors)
 
 	// avoid printing to stdout if user has requested json/dot formatted output
@@ -79,7 +77,7 @@ func Crawl(mappedPage mapper.Page, trackedURLs Tracker, instr *instrumentator.In
 			defer wg.Done()
 
 			for url := range tasks {
-				page, err := requester.Get(url, httpClient)
+				page, err := requester.Get(url, httpclient)
 				if err != nil {
 					instr.Logger.Warn(err)
 					continue

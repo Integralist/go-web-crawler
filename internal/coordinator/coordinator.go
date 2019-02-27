@@ -52,7 +52,7 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 	// within a slice by maybe replacing the []T with variadic arguments, but
 	// that is likely to result in other trade-offs.
 	entryPage := ProcessedResults{mappedPage}
-	results = process(entryPage, results, trackedURLs, instr)
+	results = process(entryPage, results, trackedURLs, httpclient, instr)
 
 	return results
 }
@@ -69,9 +69,15 @@ func Results(results []mapper.Page, json, dot bool, startTime time.Time) {
 }
 
 // process recursively calls itself and processes the next set of mapped pages.
-func process(mappedPages ProcessedResults, results []mapper.Page, trackedURLs crawler.Tracker, instr *instrumentator.Instr) ProcessedResults {
+func process(
+	mappedPages ProcessedResults,
+	results []mapper.Page,
+	trackedURLs crawler.Tracker,
+	httpclient requester.HTTPClient,
+	instr *instrumentator.Instr) ProcessedResults {
+
 	for _, page := range mappedPages {
-		crawledPages := crawler.Crawl(page, trackedURLs, instr)
+		crawledPages := crawler.Crawl(page, trackedURLs, httpclient, instr)
 		tokenizedNestedPages := parser.ParseCollection(crawledPages, instr)
 		mappedNestedPages := mapper.MapCollection(tokenizedNestedPages, instr)
 
@@ -81,7 +87,7 @@ func process(mappedPages ProcessedResults, results []mapper.Page, trackedURLs cr
 
 		// reassign the results so we can return them up the stack back to the
 		// original caller for final display
-		results = process(mappedNestedPages, results, trackedURLs, instr)
+		results = process(mappedNestedPages, results, trackedURLs, httpclient, instr)
 	}
 
 	return results
