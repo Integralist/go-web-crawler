@@ -16,9 +16,6 @@ import (
 // ProcessedResults are the final results slice containing all crawled pages.
 type ProcessedResults []mapper.Page
 
-// analysis is an accumulator of the pages that have been crawled so far.
-type analysis []mapper.Page
-
 // Start begins crawling the given website starting with the entry page.
 func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *instrumentator.Instr) ProcessedResults {
 	// request entrypoint web page
@@ -54,7 +51,7 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 	// would be good to avoid the code smell of wrapping our single page instance
 	// within a slice by maybe replacing the []T with variadic arguments, but
 	// that is likely to result in other trade-offs.
-	entryPage := analysis{mappedPage}
+	entryPage := ProcessedResults{mappedPage}
 	results = process(entryPage, results, trackedURLs)
 
 	return results
@@ -72,7 +69,7 @@ func Results(results []mapper.Page, json, dot bool, startTime time.Time) {
 }
 
 // process recursively calls itself and processes the next set of mapped pages.
-func process(mappedPages analysis, results []mapper.Page, trackedURLs crawler.Tracker) ProcessedResults {
+func process(mappedPages ProcessedResults, results []mapper.Page, trackedURLs crawler.Tracker) ProcessedResults {
 	for _, page := range mappedPages {
 		crawledPages := crawler.Crawl(page, trackedURLs)
 		tokenizedNestedPages := parser.ParseCollection(crawledPages)
