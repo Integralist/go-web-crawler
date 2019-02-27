@@ -60,9 +60,9 @@ func Start(protocol, hostname string, httpclient requester.HTTPClient, instr *in
 // Results displays the final output for the program.
 func Results(results []mapper.Page, json, dot bool, startTime time.Time) {
 	if json {
-		fmt.Println(formatter.Pretty(results))
+		formatter.Pretty(results)
 	} else if dot {
-		fmt.Println(formatter.Dot(results))
+		formatter.Dot(results)
 	} else {
 		formatter.Standard(results, startTime)
 	}

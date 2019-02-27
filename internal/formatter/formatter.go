@@ -30,7 +30,7 @@ var fns = template.FuncMap{
 }
 
 // Dot renders our results in dot format for use with graphviz
-func Dot(results []mapper.Page) string {
+func Dot(results []mapper.Page) {
 	dotTmpl := `digraph sitemap { {{- range .}}
   "{{.URL}}"
     -> { {{- $n := len .Anchors}}{{range  $i, $v := .Anchors}}
@@ -48,16 +48,16 @@ func Dot(results []mapper.Page) string {
 		log.Fatal(err)
 	}
 
-	return output.String()
+	fmt.Println(output.String())
 }
 
 // Pretty cleanly formats a given data structure for easily reading.
-func Pretty(v interface{}) (s string) {
+func Pretty(v interface{}) {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		return ""
+		fmt.Println(err)
 	}
-	return string(b)
+	fmt.Println(string(b))
 }
 
 // Standard is the default formatted output for the program
