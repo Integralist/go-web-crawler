@@ -154,6 +154,8 @@ func ParseCollection(pages []requester.Page, instr *instrumentator.Instr) []Page
 			for page := range tasks {
 				tokenizedPage := Parse(page, instr)
 
+				// we use a mutex to ensure thread safety, not only for the correctness
+				// of the program but also because the Go language can trigger a panic!
 				mutex.Lock()
 				tokenizedPages = append(tokenizedPages, tokenizedPage)
 				mutex.Unlock()

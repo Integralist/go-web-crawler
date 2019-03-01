@@ -64,6 +64,8 @@ func appendWhenNotTracked(key string, collection Assets, assets parser.Assets, t
 			if attr.Key == key {
 				// a single page can repeatedly link to the same URL, so we don't
 				// bother appending those URLs more than once.
+				//
+				// note: there might be a race condition with Load/Store 🤔
 				if _, ok := trackedURLs.Load(attr.Val); !ok {
 					mutex.Lock()
 					collection = append(collection, attr.Val)
@@ -102,6 +104,8 @@ func MapCollection(pages []parser.Page, instr *instrumentator.Instr) []Page {
 			for page := range tasks {
 				mappedPage := Map(page)
 
+				// we use a mutex to ensure thread safety, not only for the correctness
+				// of the program but also because the Go language can trigger a panic!
 				mutex.Lock()
 				mappedPages = append(mappedPages, mappedPage)
 				mutex.Unlock()

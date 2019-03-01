@@ -85,6 +85,8 @@ func Crawl(mappedPage mapper.Page, trackedURLs Tracker, httpclient requester.HTT
 				trackedURLs.Store(url, true)
 				counter++
 
+				// we use a mutex to ensure thread safety, not only for the correctness
+				// of the program but also because the Go language can trigger a panic!
 				mutex.Lock()
 				pages = append(pages, page)
 				mutex.Unlock()
@@ -94,6 +96,10 @@ func Crawl(mappedPage mapper.Page, trackedURLs Tracker, httpclient requester.HTT
 
 	for _, url := range mappedPage.Anchors {
 		// check anchor within the given page hasn't already been processed
+		//
+		// originally I had the check for the Load within the goroutine itself, but
+		// there is a possible race condition concern due to context switching. so
+		// it's easier to reason about the logic when this check is outside.
 		if _, ok := trackedURLs.Load(url); !ok {
 			tasks <- url
 		}
