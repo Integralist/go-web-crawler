@@ -26,6 +26,8 @@
   <img src="./architecture.png">
 </a>
 
+> Note: the implementation tracks already processed pages and so you'll find (over time) that the amount of work carried out is reduced. It's not logarithmic, or exponential, levels of reduction in workload (as the content is non-deterministic) but there is a degree of reduction.
+
 ## Considerations
 
 Due to the potential unbounded nature of a web crawler, we want to ensure we don't overwhelm the CPU by creating a large number of goroutines (they still have a cost, especially with regards to the overhead of the scheduler having to context switch). 
